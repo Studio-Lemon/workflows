@@ -23,17 +23,6 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-
-            - name: Setup Node.js and cache npm
-              uses: actions/setup-node@v4
-              with:
-                # Use an LTS Node version; adjust if your project needs a different one
-                node-version: '22'
-                # Enable built-in npm caching
-                cache: 'npm'
-                # Cache key should update when the lockfile changes
-                cache-dependency-path: ${{ env.PLUGIN_DIR }}/package-lock.json
-
             - name: Build plugin
               working-directory: ${{ env.PLUGIN_DIR }}
               run: |

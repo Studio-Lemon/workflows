@@ -22,7 +22,7 @@ jobs:
             PLUGIN_NAME: ${{ inputs.plugin_name }}
             BUILD_COMMANDS: |
                 npm install
-                npm run build
+                npm run build:ci
         steps:
             - name: Checkout
               uses: actions/checkout@v4

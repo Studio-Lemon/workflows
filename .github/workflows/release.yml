@@ -48,7 +48,6 @@ jobs:
                   cp -r blocks $PLUGIN_NAME
                 fi
 
-                cp -r dist $PLUGIN_NAME
                 zip -r $PLUGIN_NAME.zip $PLUGIN_NAME
 
             - name: Release (create GitHub release and upload assets)

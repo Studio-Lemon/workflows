@@ -19,7 +19,7 @@ jobs:
         runs-on: ubuntu-latest
         env:
             PLUGIN_DIR: .
-            ZIP_NAME_RAW: ${{ inputs.plugin_name }}
+            PLUGIN_NAME: ${{ inputs.plugin_name }}
             BUILD_COMMANDS: |
                 npm install
                 npm run build
@@ -37,28 +37,23 @@ jobs:
             - name: Create zip archive
               working-directory: ${{ env.PLUGIN_DIR }}
               run: |
-                  set -e
-                  # ensure zip name ends with .zip
-                  ZIP_NAME="$ZIP_NAME_RAW"
-                  case "$ZIP_NAME" in
-                    *.zip) ;;
-                    *) ZIP_NAME="$ZIP_NAME.zip" ;;
-                  esac
-                  echo "Creating archive: $ZIP_NAME for plugin dir: $PLUGIN_DIR"
-                  TMPDIR="assemble_dir"
-                  rm -rf "$TMPDIR"
-                  mkdir -p "$TMPDIR"
-                  git archive --format=tar HEAD | tar -x -C "$TMPDIR"
-                  # include dist automatically if present
-                  if [ -d "dist" ]; then
-                    cp -r "dist" "$TMPDIR/"
-                  fi
-                  if [ -d "blocks" ]; then
-                    cp -r "blocks" "$TMPDIR/"
-                  fi
-                  cd "$TMPDIR"
-                  zip -r "../$ZIP_NAME" .
-                  mv "../$ZIP_NAME" ../
+                git archive --format=zip HEAD -o $PLUGIN_NAME.zip
+                mkdir $PLUGIN_NAME
+                unzip $PLUGIN_NAME.zip -d $PLUGIN_NAME
+                rm $PLUGIN_NAME.zip
+
+                # include dist automatically if present
+                if [ -d "dist" ]; then
+                  cp -r dist $PLUGIN_NAME
+                fi
+
+                # include BLOCKS automatically if present
+                if [ -d "blocks" ]; then
+                  cp -r blocks $PLUGIN_NAME
+                fi
+
+                cp -r dist $PLUGIN_NAME
+                zip -r $PLUGIN_NAME.zip $PLUGIN_NAME
 
             - name: Release (create GitHub release and upload assets)
               if: startsWith(github.ref, 'refs/tags/')

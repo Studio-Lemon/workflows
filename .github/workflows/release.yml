@@ -9,7 +9,7 @@ on:
         inputs:
             plugin_name:
                 description: 'Logical plugin name (e.g. lemon-woo). Workflow will append .zip if needed.'
-                required: false
+                required: true
                 type: string
                 default: 'plugin'
 

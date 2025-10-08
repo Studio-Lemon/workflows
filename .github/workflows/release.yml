@@ -53,6 +53,9 @@ jobs:
                   if [ -d "dist" ]; then
                     cp -r "dist" "$TMPDIR/"
                   fi
+                  if [ -d "blocks" ]; then
+                    cp -r "blocks" "$TMPDIR/"
+                  fi
                   cd "$TMPDIR"
                   zip -r "../$ZIP_NAME" .
                   mv "../$ZIP_NAME" ../

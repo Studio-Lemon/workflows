@@ -12,7 +12,7 @@ on:
 
 jobs:
     call-release:
-        uses: Studio-Lemon/workflows/.github/workflows/release-plugin/release.yml@main
+        uses: Studio-Lemon/workflows/.github/workflows/release-plugin/plugin-release.yml@main
         with:
             plugin_name: 'lemon-woo'
         secrets: inherit
@@ -30,7 +30,7 @@ You can also call the workflow locally (from the same repository) by using a `us
 ```yaml
 jobs:
     call-local:
-        uses: ./.github/workflows/release.yml
+        uses: ./.github/workflows/plugin-release.yml
         with:
             plugin_name: 'lemon-woo'
 ```

@@ -72,27 +72,6 @@ jobs:
     secrets:
       # required secrets
 ```
-
-### 2. Organization Benefits
-
-When calling workflows from the same GitHub organization (Studio-Lemon), you can use:
-
-```yaml
-secrets: inherit
-```
-
-This automatically forwards all secrets from the calling repository to the workflow, simplifying configuration.
-
-### 3. Version Pinning
-
-For production use, consider pinning to specific versions:
-
-```yaml
-uses: Studio-Lemon/workflows/.github/workflows/WORKFLOW_NAME.yml@v1.2.3
-```
-
-Or use `@main` for the latest version during development.
-
 ## 🛠 Development
 
 ### Adding New Workflows

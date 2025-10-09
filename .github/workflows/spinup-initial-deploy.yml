@@ -28,9 +28,6 @@ on:
       SSH_HOST:
         description: 'SSH host for deployment'
         required: true
-      SATISPRESS_TOKEN:
-        description: 'Token for Satispress authentication (optional - will use workflow repo token if not provided)'
-        required: false
 
     
 jobs:
@@ -72,7 +69,7 @@ jobs:
    
       - name: Install dependencies
         env:
-          SATISPRESS_TOKEN: ${{ secrets.SATISPRESS_TOKEN || secrets.WORKFLOW_SATISPRESS_TOKEN }}
+          SATISPRESS_TOKEN: ${{ secrets.SATISPRESS_TOKEN }}
         run: |
           if [ -n "$SATISPRESS_TOKEN" ]; then
             composer config -a -g http-basic.packagist.studiolemon.nl \

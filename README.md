@@ -34,8 +34,8 @@ with:
 secrets: inherit
 ```
 
-### [SpinupWP Initial Deploy](./documentation/spinup-initial-deploy.md) 
-**File:** `.github/workflows/spinup-initial-deploy.yml`
+### [SpinupWP Deploy](./documentation/spinup-deploy.md) 
+**File:** `.github/workflows/spinup-deploy.yml`
 
 Complete WordPress theme deployment pipeline for SpinupWP servers.
 
@@ -47,11 +47,8 @@ Complete WordPress theme deployment pipeline for SpinupWP servers.
 
 **Quick Start:**
 ```yaml
-uses: Studio-Lemon/workflows/.github/workflows/spinup-initial-deploy.yml@main
-secrets:
-  SSH_KEY: ${{ secrets.SSH_KEY }}
-  SSH_USER: ${{ secrets.SSH_USER }}
-  SSH_HOST: ${{ secrets.SSH_HOST }}
+uses: Studio-Lemon/workflows/.github/workflows/spinup-deploy.yml@main
+secrets: inherit
 ```
 
 ## 📖 How to Use
@@ -113,22 +110,6 @@ Or use `@main` for the latest version during development.
 - **Centralize common secrets** in this repository to reduce setup burden
 - **Fail fast** with clear error messages
 - **Document everything** - inputs, outputs, secrets, and usage examples
-
-### Testing Changes
-
-Before merging changes:
-1. Test workflows in a sample repository
-2. Verify backwards compatibility with existing consumers
-3. Update documentation for any breaking changes
-4. Consider semantic versioning for major changes
-
-## 🤝 Contributing
-
-1. **Fork** this repository
-2. **Create** a feature branch (`git checkout -b feature/new-workflow`)
-3. **Test** your changes thoroughly
-4. **Document** the workflow following existing patterns
-5. **Submit** a pull request
 
 ## 📚 Resources
 

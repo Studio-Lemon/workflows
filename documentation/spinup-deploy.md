@@ -13,23 +13,31 @@ This reusable `spinup-initial-deploy` workflow can be called from a central `.gi
 
 Add this to the calling repository's `.github/workflows` directory (example: `.github/workflows/deploy-staging.yml`):
 
-### Simple usage (auto-detect theme)
+### Simple Initial Deploy
 ```yaml
-name: Deploy to Staging
+name: Initial Deploy to Staging
 
 on:
-    push:
-        branches: [staging]
     workflow_dispatch:
 
 jobs:
     deploy:
-        uses: Studio-Lemon/workflows/.github/workflows/spinup-initial-deploy.yml@main
-        secrets:
-            SSH_KEY: ${{ secrets.SSH_KEY }}
-            SSH_USER: ${{ secrets.SSH_USER }}
-            SSH_HOST: ${{ secrets.SSH_HOST }}
-            # SATISPRESS_TOKEN is optional - will use workflow repo token if not provided
+        uses: Studio-Lemon/workflows/.github/workflows/spinup-deploy.yml@main
+        secrets: inherit
+        with:
+            initial_deploy: true
+```
+
+### Simple Regular Deploy
+```yaml
+name: Deploy to Staging
+on:
+    push:
+        branches: [staging]
+jobs:
+    deploy:
+        uses: Studio-Lemon/workflows/.github/workflows/spinup-deploy.yml@main
+        secrets: inherit
 ```
 
 ### Advanced usage (custom configuration)
@@ -43,7 +51,7 @@ on:
 
 jobs:
     deploy:
-        uses: Studio-Lemon/workflows/.github/workflows/spinup-initial-deploy.yml@main
+        uses: Studio-Lemon/workflows/.github/workflows/spinup-deploy.yml@main
         with:
             theme: 'my-custom-theme'  # Optional - will auto-detect if not provided
             php_version: '8.2'        # Optional - defaults to '8.3'
@@ -62,14 +70,10 @@ You can also call the workflow locally (from the same repository) by using a `us
 ```yaml
 jobs:
     deploy-local:
-        uses: ./.github/workflows/spinup-initial-deploy.yml
+        uses: ./.github/workflows/spinup-deploy.yml
         with:
             theme: 'my-theme'
-        secrets:
-            SSH_KEY: ${{ secrets.SSH_KEY }}
-            SSH_USER: ${{ secrets.SSH_USER }}
-            SSH_HOST: ${{ secrets.SSH_HOST }}
-            SATISPRESS_TOKEN: ${{ secrets.SATISPRESS_TOKEN }}
+        secrets: inherit
 ```
 
 ## Required Repository Structure

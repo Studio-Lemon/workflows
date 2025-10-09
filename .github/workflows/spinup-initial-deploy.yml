@@ -95,7 +95,9 @@ jobs:
          cache-dependency-path: web/app/themes/${{ steps.detect-theme.outputs.THEME_NAME }}/yarn.lock
       - run: |
           cd ./web/app/themes/${{ steps.detect-theme.outputs.THEME_NAME }}
-          cp ./resources/assets/config.production.json ./resources/assets/config.json
+          cp ./resources/assets/config.json.example ./resources/assets/config.json
+          # Replace 'wp-lemon-child' with actual theme name in config.json
+          sed -i 's/wp-lemon-child/${{ steps.detect-theme.outputs.THEME_NAME }}/g' ./resources/assets/config.json
           yarn install
           yarn run production
       - name: rsync deployments

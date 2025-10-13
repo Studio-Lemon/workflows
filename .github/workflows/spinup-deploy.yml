@@ -125,11 +125,12 @@ jobs:
           yarn install
           yarn run production
 
-      - name: Cache built theme assets
-        uses: actions/cache@v4
+      - name: Upload built theme assets
+        uses: actions/upload-artifact@v4
         with:
+          name: theme-assets-${{ needs.detect_theme.outputs.theme_name }}
           path: web/app/themes/${{ needs.detect_theme.outputs.theme_name }}/dist/
-          key: theme-${{ runner.os }}-${{ needs.detect_theme.outputs.theme_name }}-${{ hashFiles('**/yarn.lock') }}-${{ github.sha }}
+          retention-days: 1
 
   deploy_php:
     name: Deploy Bedrock and plugin PHP Files
@@ -164,11 +165,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Restore built theme assets
-        uses: actions/cache@v4
+      - name: Download built theme assets
+        uses: actions/download-artifact@v4
         with:
+          name: theme-assets-${{ needs.detect_theme.outputs.theme_name }}
           path: web/app/themes/${{ needs.detect_theme.outputs.theme_name }}/dist/
-          key: theme-${{ runner.os }}-${{ needs.detect_theme.outputs.theme_name }}-${{ hashFiles('**/yarn.lock') }}-${{ github.sha }}
 
       - name: Deploy theme files via rsync
         uses: burnett01/rsync-deployments@6.0.0

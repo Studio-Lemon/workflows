@@ -70,10 +70,9 @@ jobs:
           fi
 
   build_php:
-    name: Build PHP Dependencies (Initial Deploy Only)
+    name: Build PHP Dependencies
     runs-on: ubuntu-latest
     needs: detect_theme
-    if: inputs.initial_deploy
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -101,13 +100,26 @@ jobs:
           path: vendor/
           key: php-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
 
+      - name: Upload theme files
+        uses: actions/upload-artifact@v4
+        with:
+          name: themes-source
+          path: web/app/themes/
+          retention-days: 1
+
   build_theme:
     name: Build Theme Assets
     runs-on: ubuntu-latest
-    needs: detect_theme
+    needs: [detect_theme, build_php]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Download theme source files
+        uses: actions/download-artifact@v4
+        with:
+          name: themes-source
+          path: web/app/themes/
 
       - name: Setup Node.js
         uses: actions/setup-node@v4  

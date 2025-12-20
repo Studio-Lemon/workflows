@@ -34,6 +34,25 @@ with:
 secrets: inherit
 ```
 
+### [Theme Release](./documentation/theme-release.md)
+**File:** `.github/workflows/theme-release.yml`
+
+Automates the creation of theme ZIP archives and GitHub releases.
+
+- Builds theme blocks with yarn (optional)
+- Creates clean ZIP archives with dist and blocks folders
+- Publishes GitHub releases with assets
+- Triggered on Git tags
+
+**Quick Start:**
+```yaml
+uses: Studio-Lemon/workflows/.github/workflows/theme-release.yml@main
+with:
+  theme_name: 'my-theme'
+  build_blocks: true
+secrets: inherit
+```
+
 ### [SpinupWP Deploy](./documentation/spinup-deploy.md) 
 **File:** `.github/workflows/spinup-deploy.yml`
 

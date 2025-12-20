@@ -33,22 +33,26 @@ jobs:
             - name: Create zip archive
               working-directory: ${{ env.PLUGIN_DIR }}
               run: |
-                git archive --format=zip HEAD -o $PLUGIN_NAME.zip
-                mkdir $PLUGIN_NAME
-                unzip $PLUGIN_NAME.zip -d $PLUGIN_NAME
-                rm $PLUGIN_NAME.zip
+                # Create base archive with prefix
+                git archive --format=zip --prefix=$PLUGIN_NAME/ HEAD -o $PLUGIN_NAME.zip
+
+                # Create temp directory for adding extra folders
+                mkdir -p .zip-temp/$PLUGIN_NAME
 
                 # include dist automatically if present
                 if [ -d "dist" ]; then
-                  cp -r dist $PLUGIN_NAME
+                  cp -r dist .zip-temp/$PLUGIN_NAME/
+                  (cd .zip-temp && zip -ur ../$PLUGIN_NAME.zip $PLUGIN_NAME/dist)
                 fi
 
-                # include BLOCKS automatically if present
+                # include blocks automatically if present
                 if [ -d "blocks" ]; then
-                  cp -r blocks $PLUGIN_NAME
+                  cp -r blocks .zip-temp/$PLUGIN_NAME/
+                  (cd .zip-temp && zip -ur ../$PLUGIN_NAME.zip $PLUGIN_NAME/blocks)
                 fi
 
-                zip -r $PLUGIN_NAME.zip $PLUGIN_NAME
+                # Cleanup
+                rm -rf .zip-temp
 
             - name: Release (create GitHub release and upload assets)
               if: startsWith(github.ref, 'refs/tags/')

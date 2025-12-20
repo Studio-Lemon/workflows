@@ -1,4 +1,4 @@
-name: Release
+name: Create plugin release zip
 
 on:
     # Allow this workflow to be called from another repo (reusable workflow)

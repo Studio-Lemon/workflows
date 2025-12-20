@@ -37,9 +37,8 @@ Add this to your theme repository's `.github/workflows` directory (example: `.gi
 name: Create Release zip
 
 on:
-  push:
-    release:
-        types: [published]
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:

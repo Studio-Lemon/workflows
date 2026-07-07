@@ -206,7 +206,7 @@ jobs:
         with:
           switches: -avzr --delete --delete-excluded --exclude=".*" --exclude="babel.config.js" --exclude="package.json" --exclude="phpcs.xml.dist" --exclude="phpstan.neon.dist" --exclude="*.md" --exclude="yarn.lock" --exclude="package.lock" --exclude="node_modules"
           remote_path: files/web/app/themes/
-          path: web/app/themes/${{ needs.detect_theme.outputs.theme_name }}
+          path: web/app/themes/
           remote_host: ${{ secrets.SSH_HOST }}
           remote_port: 22
           remote_user: ${{ secrets.SSH_USER }}

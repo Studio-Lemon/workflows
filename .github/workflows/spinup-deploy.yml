@@ -226,7 +226,11 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          script: "cd files && wp spinupwp cache purge-site"
+          script: |
+            cd files
+            if command -v wp spinupwp purge-site >/dev/null 2>&1; then
+              wp spinupwp cache purge-site >/dev/null 2>&1 || true
+            fi
 
   deploy_env:
     name: Deploy Environment File (Initial Deploy Only)

@@ -1,69 +1,69 @@
 name: Create theme release zip
 
 on:
-    # Allow this workflow to be called from another repo (reusable workflow)
-    workflow_call:
-        inputs:
-            theme_name:
-                description: 'Logical theme name (e.g. lemon-theme). Workflow will append .zip if needed.'
-                required: true
-                type: string
-                default: 'theme'
-            build_blocks:
-                description: 'Whether to build blocks before creating the zip'
-                required: false
-                type: boolean
-                default: false
+  # Allow this workflow to be called from another repo (reusable workflow)
+  workflow_call:
+    inputs:
+      theme_name:
+        description: "Logical theme name (e.g. lemon-theme). Workflow will append .zip if needed."
+        required: true
+        type: string
+        default: "theme"
+      build_blocks:
+        description: "Whether to build blocks before creating the zip"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
-    create_zip:
-        name: Build release zip
-        runs-on: ubuntu-latest
-        env:
-            THEME_DIR: .
-            THEME_NAME: ${{ inputs.theme_name }}
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-            - name: Setup Nodejs with yarn caching
-              if: ${{ inputs.build_blocks }}
-              uses: actions/setup-node@v4
-              with:
-                  node-version: lts/*
-                  cache: 'yarn'
-            - name: Build theme
-              if: ${{ inputs.build_blocks }}
-              working-directory: ${{ env.THEME_DIR }}
-              run: |
-                  yarn install
-                  yarn run blocks:build
+  create_zip:
+    name: Build release zip
+    runs-on: ubuntu-latest
+    env:
+      THEME_DIR: .
+      THEME_NAME: ${{ inputs.theme_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Nodejs with yarn caching
+        if: ${{ inputs.build_blocks }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: "yarn"
+      - name: Build theme
+        if: ${{ inputs.build_blocks }}
+        working-directory: ${{ env.THEME_DIR }}
+        run: |
+          yarn install
+          yarn run blocks:build
 
-            - name: Create zip archive
-              working-directory: ${{ env.THEME_DIR }}
-              run: |
-                # Create base archive with prefix
-                git archive --format=zip --prefix=$THEME_NAME/ HEAD -o $THEME_NAME.zip
+      - name: Create zip archive
+        working-directory: ${{ env.THEME_DIR }}
+        run: |
+          # Create base archive with prefix
+          git archive --format=zip --prefix=$THEME_NAME/ HEAD -o $THEME_NAME.zip
 
-                # Create temp directory for adding extra folders
-                mkdir -p .zip-temp/$THEME_NAME
+          # Create temp directory for adding extra folders
+          mkdir -p .zip-temp/$THEME_NAME
 
-                # include dist automatically if present
-                if [ -d "dist" ]; then
-                  cp -r dist .zip-temp/$THEME_NAME/
-                  (cd .zip-temp && zip -ur ../$THEME_NAME.zip $THEME_NAME/dist)
-                fi
+          # include dist automatically if present
+          if [ -d "dist" ]; then
+            cp -r dist .zip-temp/$THEME_NAME/
+            (cd .zip-temp && zip -ur ../$THEME_NAME.zip $THEME_NAME/dist)
+          fi
 
-                # include blocks automatically if present
-                if [ -d "blocks" ]; then
-                  cp -r blocks .zip-temp/$THEME_NAME/
-                  (cd .zip-temp && zip -ur ../$THEME_NAME.zip $THEME_NAME/blocks)
-                fi
+          # include blocks automatically if present
+          if [ -d "blocks" ]; then
+            cp -r blocks .zip-temp/$THEME_NAME/
+            (cd .zip-temp && zip -ur ../$THEME_NAME.zip $THEME_NAME/blocks)
+          fi
 
-                # Cleanup
-                rm -rf .zip-temp
+          # Cleanup
+          rm -rf .zip-temp
 
-            - name: Release (create GitHub release and upload assets)
-              if: startsWith(github.ref, 'refs/tags/')
-              uses: softprops/action-gh-release@v2
-              with:
-                  files: ${{ env.THEME_NAME }}.zip
+      - name: Release (create GitHub release and upload assets)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: ${{ env.THEME_NAME }}.zip

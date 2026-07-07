@@ -114,6 +114,7 @@ jobs:
           path: |
             vendor/
             web/app/plugins/
+            web/wp/
           key: ${{ steps.php-cache-key.outputs.key }}
 
       - name: Upload theme files
@@ -136,6 +137,7 @@ jobs:
           path: |
             vendor/
             web/app/plugins/
+            web/wp/
           key: ${{ needs.build_php.outputs.php_cache_key }}
 
       - name: Deploy PHP files via rsync

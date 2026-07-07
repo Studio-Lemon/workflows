@@ -24,6 +24,9 @@ on:
         type: string
         default: "lts/*"
     secrets:
+      SATISPRESS_TOKEN:
+        description: "Satispress token for private Composer packages"
+        required: false
       SSH_KEY:
         description: "SSH private key for deployment"
         required: true

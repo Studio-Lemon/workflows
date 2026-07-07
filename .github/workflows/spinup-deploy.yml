@@ -44,6 +44,11 @@ jobs:
     outputs:
       theme_name: ${{ steps.detect-theme.outputs.THEME_NAME }}
     steps:
+      - name: Validate SSH key format
+        run: |
+          echo "$SSH_KEY" | ssh-keygen -y -f /dev/stdin > /dev/null
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
       - name: Checkout Repository
         uses: actions/checkout@v7
 

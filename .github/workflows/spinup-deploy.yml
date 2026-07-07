@@ -111,7 +111,9 @@ jobs:
         id: cache-php
         uses: actions/cache@v6
         with:
-          path: vendor/
+          path: |
+            vendor/
+            web/app/plugins/
           key: ${{ steps.php-cache-key.outputs.key }}
 
       - name: Upload theme files
@@ -131,7 +133,9 @@ jobs:
       - name: Restore PHP dependencies
         uses: actions/cache@v6
         with:
-          path: vendor/
+          path: |
+            vendor/
+            web/app/plugins/
           key: ${{ needs.build_php.outputs.php_cache_key }}
 
       - name: Deploy PHP files via rsync

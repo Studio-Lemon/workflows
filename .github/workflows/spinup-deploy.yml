@@ -81,10 +81,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: detect_theme
     outputs:
-      php_cache_key: ${{ steps.cache-php.outputs.cache-primary-key }}
+      php_cache_key: ${{ steps.php-cache-key.outputs.key }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
+
+      - name: Compute PHP cache key
+        id: php-cache-key
+        run: echo "key=php-${{ runner.os }}-${{ hashFiles('composer.lock') }}" >> $GITHUB_OUTPUT
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -108,7 +112,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: vendor/
-          key: php-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          key: ${{ steps.php-cache-key.outputs.key }}
 
       - name: Upload theme files
         uses: actions/upload-artifact@v7

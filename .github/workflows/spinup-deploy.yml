@@ -202,7 +202,6 @@ jobs:
     name: Clear Cache
     runs-on: ubuntu-latest
     needs: [deploy_theme, deploy_php]
-    if: inputs.initial_deploy
     steps:
       - name: Login and clear cache
         uses: appleboy/ssh-action@v1.2.5

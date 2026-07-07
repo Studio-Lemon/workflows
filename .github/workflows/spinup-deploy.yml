@@ -189,6 +189,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v7
 
+      - name: Download theme source files
+        uses: actions/download-artifact@v8
+        with:
+          name: themes-source
+          path: web/app/themes/
+
       - name: Download built theme assets
         uses: actions/download-artifact@v8
         with:

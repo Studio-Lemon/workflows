@@ -80,6 +80,8 @@ jobs:
     name: Build PHP Dependencies
     runs-on: ubuntu-latest
     needs: detect_theme
+    outputs:
+      php_cache_key: ${{ steps.cache-php.outputs.cache-primary-key }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
@@ -102,10 +104,11 @@ jobs:
           composer install --prefer-dist --no-progress
 
       - name: Cache PHP dependencies
+        id: cache-php
         uses: actions/cache@v6
         with:
           path: vendor/
-          key: php-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          key: php-${{ runner.os }}-${{ hashFiles('composer.lock') }}
 
       - name: Upload theme files
         uses: actions/upload-artifact@v7
@@ -125,7 +128,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: vendor/
-          key: php-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ needs.build_php.outputs.php_cache_key }}
 
       - name: Deploy PHP files via rsync
         uses: burnett01/rsync-deployments@v9

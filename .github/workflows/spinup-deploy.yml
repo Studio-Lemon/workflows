@@ -102,7 +102,7 @@ jobs:
           composer install --prefer-dist --no-progress
 
       - name: Cache PHP dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: vendor/
           key: php-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}

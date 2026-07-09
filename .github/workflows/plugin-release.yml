@@ -9,6 +9,11 @@ on:
         required: true
         type: string
         default: "plugin"
+      node_version:
+        description: "Node.js version used for plugin build"
+        required: false
+        type: string
+        default: "lts/*"
 
 jobs:
   create_zip:
@@ -18,11 +23,17 @@ jobs:
       PLUGIN_DIR: .
       PLUGIN_NAME: ${{ inputs.plugin_name }}
       BUILD_COMMANDS: |
-        npm install
-        npm run build:ci
+        yarn install
+        yarn run build:ci
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version || 'lts/*' }}
+          cache: "yarn"
+          cache-dependency-path: ${{ env.PLUGIN_DIR }}/yarn.lock
       - name: Build plugin
         working-directory: ${{ env.PLUGIN_DIR }}
         run: |

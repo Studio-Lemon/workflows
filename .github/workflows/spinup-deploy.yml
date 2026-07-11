@@ -90,12 +90,69 @@ jobs:
         id: php-cache-key
         run: echo "key=php-${{ runner.os }}-${{ hashFiles('composer.lock') }}" >> $GITHUB_OUTPUT
 
+      - name: Check if composer.lock changed since last successful deploy
+        id: composer-lock-change
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const workflowId = 'spinup-deploy.yml';
+            const currentSha = context.sha;
+
+            const runsResponse = await github.rest.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: workflowId,
+              status: 'completed',
+              branch: context.ref.replace('refs/heads/', ''),
+              per_page: 20,
+            });
+
+            const previousSuccessfulRun = runsResponse.data.workflow_runs.find(
+              (run) => run.id !== context.runId && run.conclusion === 'success'
+            );
+
+            if (!previousSuccessfulRun) {
+              core.info('No previous successful deployment found. composer.lock is treated as changed.');
+              core.setOutput('changed', 'true');
+              return;
+            }
+
+            const previousSha = previousSuccessfulRun.head_sha;
+            core.info(`Comparing commits ${previousSha}...${currentSha}`);
+
+            const compareResponse = await github.rest.repos.compareCommitsWithBasehead({
+              owner,
+              repo,
+              basehead: `${previousSha}...${currentSha}`,
+            });
+
+            const composerLockChanged = (compareResponse.data.files || []).some(
+              (file) => file.filename === 'composer.lock'
+            );
+
+            core.info(`composer.lock changed: ${composerLockChanged}`);
+            core.setOutput('changed', composerLockChanged ? 'true' : 'false');
+
+      - name: Restore PHP dependencies
+        id: cache-php
+        uses: actions/cache@v6
+        with:
+          path: |
+            vendor/
+            web/app/plugins/
+            web/wp/
+          key: ${{ steps.php-cache-key.outputs.key }}
+
       - name: Setup PHP
+        if: steps.composer-lock-change.outputs.changed == 'true' || steps.cache-php.outputs.cache-hit != 'true'
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.php_version || '8.3' }}
 
       - name: Install dependencies
+        if: steps.composer-lock-change.outputs.changed == 'true' || steps.cache-php.outputs.cache-hit != 'true'
         env:
           SATISPRESS_TOKEN: ${{ secrets.SATISPRESS_TOKEN }}
         run: |
@@ -106,16 +163,6 @@ jobs:
             echo "Warning: No SATISPRESS_TOKEN found, skipping Satispress authentication"
           fi
           composer install --prefer-dist --no-progress
-
-      - name: Cache PHP dependencies
-        id: cache-php
-        uses: actions/cache@v6
-        with:
-          path: |
-            vendor/
-            web/app/plugins/
-            web/wp/
-          key: ${{ steps.php-cache-key.outputs.key }}
 
       - name: Upload theme files
         uses: actions/upload-artifact@v7

@@ -37,8 +37,8 @@ on:
         required: false
 
 jobs:
-  create_zip:
-    name: Build release zip
+  release:
+    name: Build plugin release & optionally deploy to satispress
     runs-on: ubuntu-latest
     env:
       PLUGIN_DIR: .

@@ -37,8 +37,8 @@ on:
         required: false
 
 jobs:
-  create_zip:
-    name: Build release zip
+  release:
+    name: Build theme release & optional deploy to satispress
     runs-on: ubuntu-latest
     env:
       THEME_DIR: .

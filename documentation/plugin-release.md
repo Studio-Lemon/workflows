@@ -37,11 +37,11 @@ This reusable `plugin-release` workflow can be called from a central `.github` r
 
 > Set these in your repository's **Settings → Secrets and variables → Actions**.
 
-### `satispress_deploy_key` (optional)
+### `satispress_ssh_key` (optional)
 
 - **Description:** Private SSH key used for the rsync deployment. Required when `deploy_to_satispress` is `true`.
 
-### `satispress_user` (optional)
+### `satispress_ssh_user` (optional)
 
 - **Description:** SSH user on the satispress server. Kept as a secret to avoid leaking server configuration. Required when `deploy_to_satispress` is `true`.
 
@@ -65,7 +65,7 @@ jobs:
 
 ### With Satispress Deployment
 
-Set `SATISPRESS_DEPLOY_KEY` and `SATISPRESS_USER` as repository secrets, then use `secrets: inherit`.
+Set `SATISPRESS_SSH_KEY` and `SATISPRESS_SSH_USER` as repository secrets, then use `secrets: inherit`.
 
 ```yaml
 jobs:

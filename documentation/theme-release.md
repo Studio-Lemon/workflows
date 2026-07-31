@@ -32,7 +32,7 @@ The workflow automates the process of creating a release-ready ZIP archive for W
 ### `deploy_to_satispress` (optional)
 
 - **Type:** `boolean`
-- **Description:** When `true`, deploys the theme to the satispress server via rsync after the release. Requires `remote_host` input and the `satispress_user` and `satispress_deploy_key` secrets.
+- **Description:** When `true`, deploys the theme to the satispress server via rsync after the release. Requires `remote_host` input and the `satispress_ssh_user` and `satispress_ssh_key` secrets.
 - **Default:** `false`
 
 ### `remote_host` (optional)
@@ -50,11 +50,11 @@ The workflow automates the process of creating a release-ready ZIP archive for W
 
 > Set these in your repository's **Settings → Secrets and variables → Actions**.
 
-### `satispress_deploy_key` (optional)
+### `satispress_ssh_key` (optional)
 
 - **Description:** Private SSH key used for the rsync deployment. Required when `deploy_to_satispress` is `true`.
 
-### `satispress_user` (optional)
+### `satispress_ssh_user` (optional)
 
 - **Description:** SSH user on the satispress server. Kept as a secret to avoid leaking server configuration. Required when `deploy_to_satispress` is `true`.
 
@@ -83,14 +83,14 @@ jobs:
 
 ### With Satispress Deployment
 
-Set `SATISPRESS_DEPLOY_KEY` and `SATISPRESS_USER` as repository secrets, then use `secrets: inherit`. Do **not** put these under `with:` — they are workflow secrets, not inputs.
+Set `SATISPRESS_SSH_KEY` and `SATISPRESS_SSH_USER` as repository secrets, then use `secrets: inherit`. Do **not** put these under `with:` — they are workflow secrets, not inputs.
 
 ```yaml
 jobs:
   release:
     uses: Studio-Lemon/workflows/.github/workflows/theme-release.yml@main
     with:
-      theme_name: "wp-lemon"
+      theme_name: "lemon-theme"
       build_blocks: true
       deploy_to_satispress: true
       remote_host: packagist.studiolemon.nl

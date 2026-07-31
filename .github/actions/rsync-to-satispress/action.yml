@@ -15,10 +15,10 @@ inputs:
     description: "Remote SSH port"
     required: false
     default: "22"
-  satispress_user:
+  satispress_ssh_user:
     description: "Remote SSH user. Pass a repository secret here — never hardcode it."
     required: true
-  satispress_deploy_key:
+  satispress_ssh_key:
     description: "Private SSH key for deployment. Pass a repository secret here — never hardcode it."
     required: true
 
@@ -49,5 +49,5 @@ runs:
         remote_path: files/wp-content/${{ inputs.type }}s/${{ inputs.name }}
         remote_host: ${{ inputs.remote_host }}
         remote_port: ${{ inputs.remote_port }}
-        remote_user: ${{ inputs.satispress_user }}
-        remote_key: ${{ inputs.satispress_deploy_key }}
+        remote_user: ${{ inputs.satispress_ssh_user }}
+        remote_key: ${{ inputs.satispress_ssh_key }}

@@ -19,7 +19,7 @@ This reusable `plugin-release` workflow can be called from a central `.github` r
 ### `deploy_to_satispress` (optional)
 
 - **Type:** `boolean`
-- **Description:** When `true`, deploys the plugin to the satispress server via rsync after the release. Requires `remote_host`, `remote_user`, and the `deploy_key` secret.
+- **Description:** When `true`, deploys the plugin to the satispress server via rsync after the release. Requires `remote_host`, `remote_user` secret, and the `deploy_key` secret.
 - **Default:** `false`
 
 ### `remote_host` (optional)
@@ -33,16 +33,15 @@ This reusable `plugin-release` workflow can be called from a central `.github` r
 - **Description:** SSH port of the satispress server.
 - **Default:** `22`
 
-### `remote_user` (optional)
-
-- **Type:** `string`
-- **Description:** SSH user on the satispress server.
-
 ## Secrets
 
 ### `deploy_key` (optional)
 
 - **Description:** Private SSH key used for the rsync deployment. Required when `deploy_to_satispress` is `true`.
+
+### `remote_user` (optional)
+
+- **Description:** SSH user on the satispress server. Kept as a secret to avoid leaking server configuration. Required when `deploy_to_satispress` is `true`.
 
 ## How to Use
 
@@ -72,9 +71,9 @@ jobs:
       plugin_name: "lemon-woo"
       deploy_to_satispress: true
       remote_host: packagist.studiolemon.nl
-      remote_user: packagist
     secrets:
-      deploy_key: ${{ secrets.DEPLOY_KEY }}
+      deploy_key: ${{ secrets.SATISPRESS_DEPLOY_KEY }}
+      remote_user: ${{ secrets.SATISPRESS_USER }}
 ```
 
 The deploy step uses the [rsync-to-satispress](./rsync-to-satispress.md) action with `type` automatically set to `plugin`. Exclude patterns are read from your `.gitattributes` `export-ignore` entries.

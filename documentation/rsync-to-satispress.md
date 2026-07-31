@@ -29,6 +29,9 @@ A composite action that deploys a WordPress theme or plugin to a satispress serv
 ### `remote_user` (required)
 
 - **Type:** `string`
+- **Description:** SSH user on the remote server. Pass a repository secret here — never hardcode it.
+
+- **Type:** `string`
 - **Description:** SSH user on the remote server.
 
 ### `deploy_key` (required)

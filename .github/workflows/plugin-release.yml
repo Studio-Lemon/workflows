@@ -28,13 +28,12 @@ on:
         required: false
         type: number
         default: 22
-      remote_user:
-        description: "Remote SSH user for satispress"
-        required: false
-        type: string
     secrets:
       deploy_key:
         description: "SSH deploy key for satispress"
+        required: false
+      remote_user:
+        description: "Remote SSH user for satispress"
         required: false
 
 jobs:
@@ -55,7 +54,7 @@ jobs:
         if: ${{ inputs.deploy_to_satispress }}
         env:
           REMOTE_HOST: ${{ inputs.remote_host }}
-          REMOTE_USER: ${{ inputs.remote_user }}
+          REMOTE_USER: ${{ secrets.remote_user }}
           DEPLOY_KEY: ${{ secrets.deploy_key }}
         run: |
           missing=()
@@ -87,7 +86,7 @@ jobs:
           name: ${{ inputs.plugin_name }}
           remote_host: ${{ inputs.remote_host }}
           remote_port: ${{ inputs.remote_port }}
-          remote_user: ${{ inputs.remote_user }}
+          remote_user: ${{ secrets.remote_user }}
           deploy_key: ${{ secrets.deploy_key }}
       - name: Create zip archive
         working-directory: ${{ env.PLUGIN_DIR }}

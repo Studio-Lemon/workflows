@@ -26,15 +26,12 @@ A composite action that deploys a WordPress theme or plugin to a satispress serv
 - **Default:** `22`
 - **Description:** SSH port.
 
-### `remote_user` (required)
+### `satispress_user` (required)
 
 - **Type:** `string`
 - **Description:** SSH user on the remote server. Pass a repository secret here — never hardcode it.
 
-- **Type:** `string`
-- **Description:** SSH user on the remote server.
-
-### `deploy_key` (required)
+### `satispress_deploy_key` (required)
 
 - **Type:** `string`
 - **Description:** Private SSH key for deployment. Pass a repository secret here — never hardcode it.
@@ -52,14 +49,16 @@ This means your `.gitattributes` is the single source of truth for what is exclu
 
 The action is designed to run inside an existing job that already has the repository checked out.
 
+> **Note:** `satispress_user` and `satispress_deploy_key` are **action inputs**, so they go under `with:` here. This is different from the `theme-release` and `plugin-release` reusable workflows, where they are declared as `secrets` and are passed automatically via `secrets: inherit`.
+
 ```yaml
 - uses: Studio-Lemon/workflows/.github/actions/rsync-to-satispress@main
   with:
     type: theme
     name: wp-lemon
     remote_host: packagist.studiolemon.nl
-    remote_user: packagist
-    deploy_key: ${{ secrets.DEPLOY_KEY }}
+    satispress_user: ${{ secrets.SATISPRESS_USER }}
+    satispress_deploy_key: ${{ secrets.SATISPRESS_DEPLOY_KEY }}
 ```
 
 ## Example .gitattributes

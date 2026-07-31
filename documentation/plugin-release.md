@@ -35,11 +35,13 @@ This reusable `plugin-release` workflow can be called from a central `.github` r
 
 ## Secrets
 
-### `deploy_key` (optional)
+> Set these in your repository's **Settings → Secrets and variables → Actions**.
+
+### `satispress_deploy_key` (optional)
 
 - **Description:** Private SSH key used for the rsync deployment. Required when `deploy_to_satispress` is `true`.
 
-### `remote_user` (optional)
+### `satispress_user` (optional)
 
 - **Description:** SSH user on the satispress server. Kept as a secret to avoid leaking server configuration. Required when `deploy_to_satispress` is `true`.
 
@@ -63,6 +65,8 @@ jobs:
 
 ### With Satispress Deployment
 
+Set `SATISPRESS_DEPLOY_KEY` and `SATISPRESS_USER` as repository secrets, then use `secrets: inherit`.
+
 ```yaml
 jobs:
   call-release:
@@ -71,9 +75,7 @@ jobs:
       plugin_name: "lemon-woo"
       deploy_to_satispress: true
       remote_host: packagist.studiolemon.nl
-    secrets:
-      deploy_key: ${{ secrets.SATISPRESS_DEPLOY_KEY }}
-      remote_user: ${{ secrets.SATISPRESS_USER }}
+    secrets: inherit
 ```
 
 The deploy step uses the [rsync-to-satispress](./rsync-to-satispress.md) action with `type` automatically set to `plugin`. Exclude patterns are read from your `.gitattributes` `export-ignore` entries.

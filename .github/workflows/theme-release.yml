@@ -29,10 +29,10 @@ on:
         type: number
         default: 22
     secrets:
-      deploy_key:
+      satispress_deploy_key:
         description: "SSH deploy key for satispress"
         required: false
-      remote_user:
+      satispress_user:
         description: "Remote SSH user for satispress"
         required: false
 
@@ -51,13 +51,13 @@ jobs:
         if: ${{ inputs.deploy_to_satispress }}
         env:
           REMOTE_HOST: ${{ inputs.remote_host }}
-          REMOTE_USER: ${{ secrets.remote_user }}
-          DEPLOY_KEY: ${{ secrets.deploy_key }}
+          REMOTE_USER: ${{ secrets.satispress_user }}
+          DEPLOY_KEY: ${{ secrets.satispress_deploy_key }}
         run: |
           missing=()
           [[ -z "$REMOTE_HOST" ]] && missing+=("remote_host")
-          [[ -z "$REMOTE_USER" ]] && missing+=("remote_user secret")
-          [[ -z "$DEPLOY_KEY" ]] && missing+=("deploy_key secret")
+          [[ -z "$REMOTE_USER" ]] && missing+=("satispress_user secret")
+          [[ -z "$DEPLOY_KEY" ]] && missing+=("satispress_deploy_key secret")
           if [[ ${#missing[@]} -gt 0 ]]; then
             echo "::error::deploy_to_satispress is true but the following required inputs are missing: ${missing[*]}"
             exit 1
@@ -84,8 +84,8 @@ jobs:
           name: ${{ inputs.theme_name }}
           remote_host: ${{ inputs.remote_host }}
           remote_port: ${{ inputs.remote_port }}
-          remote_user: ${{ secrets.remote_user }}
-          deploy_key: ${{ secrets.deploy_key }}
+          satispress_user: ${{ secrets.satispress_user }}
+          satispress_deploy_key: ${{ secrets.satispress_deploy_key }}
       - name: Create zip archive
         working-directory: ${{ env.THEME_DIR }}
         run: |

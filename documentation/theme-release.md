@@ -18,14 +18,44 @@ The workflow automates the process of creating a release-ready ZIP archive for W
 ## Inputs
 
 ### `theme_name` (required)
+
 - **Type:** `string`
 - **Description:** Logical theme name (e.g., `lemon-theme`). The workflow will append `.zip` to create the archive filename.
 - **Default:** `'theme'`
 
 ### `build_blocks` (optional)
+
 - **Type:** `boolean`
 - **Description:** Whether to build blocks before creating the ZIP. When enabled, runs `yarn install` and `yarn run blocks:build`.
 - **Default:** `false`
+
+### `deploy_to_satispress` (optional)
+
+- **Type:** `boolean`
+- **Description:** When `true`, deploys the theme to the satispress server via rsync after the release. Requires `remote_host`, `remote_user`, and the `deploy_key` secret.
+- **Default:** `false`
+
+### `remote_host` (optional)
+
+- **Type:** `string`
+- **Description:** SSH hostname of the satispress server.
+
+### `remote_port` (optional)
+
+- **Type:** `number`
+- **Description:** SSH port of the satispress server.
+- **Default:** `22`
+
+### `remote_user` (optional)
+
+- **Type:** `string`
+- **Description:** SSH user on the satispress server.
+
+## Secrets
+
+### `deploy_key` (optional)
+
+- **Description:** Private SSH key used for the rsync deployment. Required when `deploy_to_satispress` is `true`.
 
 ## How to Use
 
@@ -45,10 +75,28 @@ jobs:
   release:
     uses: Studio-Lemon/workflows/.github/workflows/theme-release.yml@main
     with:
-      theme_name: 'lemon-theme'
+      theme_name: "lemon-theme"
       build_blocks: true
     secrets: inherit
 ```
+
+### With Satispress Deployment
+
+```yaml
+jobs:
+  release:
+    uses: Studio-Lemon/workflows/.github/workflows/theme-release.yml@main
+    with:
+      theme_name: "wp-lemon"
+      build_blocks: true
+      deploy_to_satispress: true
+      remote_host: packagist.studiolemon.nl
+      remote_user: packagist
+    secrets:
+      deploy_key: ${{ secrets.DEPLOY_KEY }}
+```
+
+The deploy step reads exclude patterns from your `.gitattributes` `export-ignore` entries. See [rsync-to-satispress](./rsync-to-satispress.md) for details.
 
 ### Calling Locally (Same Repository)
 
@@ -59,7 +107,7 @@ jobs:
   release:
     uses: ./.github/workflows/theme-release.yml
     with:
-      theme_name: 'my-theme'
+      theme_name: "my-theme"
       build_blocks: false
 ```
 
@@ -72,9 +120,8 @@ The workflow is designed to be called via `workflow_call`, meaning it's triggere
   on:
     push:
       tags:
-        - 'v*'
+        - "v*"
   ```
-  
 - **Manual dispatch:** Manually trigger releases from GitHub UI
   ```yaml
   on:
@@ -132,21 +179,25 @@ When triggered by a tag push (refs starting with `refs/tags/`), the workflow wil
 ## Example Repositories
 
 Check out these repositories using this workflow:
+
 - (Add your theme repositories here as examples)
 
 ## Troubleshooting
 
 ### ZIP doesn't include dist or blocks folders
+
 - Ensure these folders exist after the build step
 - Check that the folders aren't empty
 - Verify the folders are created in the correct location (repository root)
 
 ### Block build fails
+
 - Verify `yarn run blocks:build` works locally
 - Check that `package.json` includes the blocks build script
 - Ensure all dependencies are listed in `package.json`
 
 ### No GitHub release is created
+
 - Verify the workflow is triggered by a tag push (`git push --tags`)
 - Check repository permissions allow creating releases
 - Ensure `secrets: inherit` is set in the calling workflow

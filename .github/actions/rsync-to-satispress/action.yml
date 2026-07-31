@@ -1,0 +1,53 @@
+name: rsync to satispress
+description: Deploy a theme or plugin to satispress via rsync. Reads .gitattributes export-ignore for excludes.
+
+inputs:
+  type:
+    description: "Package type: 'theme' or 'plugin' — determines remote path (themes/plugins)"
+    required: true
+  name:
+    description: "Package name used in the remote path (e.g. wp-lemon, lemon-woo)"
+    required: true
+  remote_host:
+    description: "Remote SSH host"
+    required: true
+  remote_port:
+    description: "Remote SSH port"
+    required: false
+    default: "22"
+  remote_user:
+    description: "Remote SSH user"
+    required: true
+  deploy_key:
+    description: "Private SSH key for deployment"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Build rsync switches from .gitattributes export-ignore
+      id: build-switches
+      shell: bash
+      run: |
+        SWITCHES="-avzr --delete --delete-excluded --exclude=node_modules"
+        if [ -f ".gitattributes" ]; then
+          while IFS= read -r line || [ -n "$line" ]; do
+            [[ -z "$line" || "$line" == \#* ]] && continue
+            if [[ "$line" == *"export-ignore"* ]]; then
+              pattern=$(awk '{print $1}' <<< "$line")
+              SWITCHES="$SWITCHES --exclude=$pattern"
+            fi
+          done < .gitattributes
+        fi
+        echo "Excludes: $(echo "$SWITCHES" | grep -o '\-\-exclude=[^ ]*' | sed 's/--exclude=//' | tr '\n' ' ')"
+        echo "switches=$SWITCHES" >> $GITHUB_OUTPUT
+
+    - name: rsync deployments
+      uses: burnett01/rsync-deployments@v8
+      with:
+        switches: ${{ steps.build-switches.outputs.switches }}
+        remote_path: files/wp-content/${{ inputs.type }}s/${{ inputs.name }}
+        remote_host: ${{ inputs.remote_host }}
+        remote_port: ${{ inputs.remote_port }}
+        remote_user: ${{ inputs.remote_user }}
+        remote_key: ${{ inputs.deploy_key }}

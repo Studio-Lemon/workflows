@@ -14,6 +14,28 @@ on:
         required: false
         type: string
         default: "lts/*"
+      deploy_to_satispress:
+        description: "Deploy to satispress server"
+        required: false
+        type: boolean
+        default: false
+      remote_host:
+        description: "Remote SSH host for satispress"
+        required: false
+        type: string
+      remote_port:
+        description: "Remote SSH port"
+        required: false
+        type: number
+        default: 22
+      remote_user:
+        description: "Remote SSH user for satispress"
+        required: false
+        type: string
+    secrets:
+      deploy_key:
+        description: "SSH deploy key for satispress"
+        required: false
 
 jobs:
   create_zip:
@@ -40,7 +62,16 @@ jobs:
           set -e
           echo "Running build commands in $(pwd)"
           bash -lc "$BUILD_COMMANDS"
-
+      - name: Deploy to satispress
+        if: ${{ inputs.deploy_to_satispress }}
+        uses: Studio-Lemon/workflows/.github/actions/rsync-to-satispress@main
+        with:
+          type: plugin
+          name: ${{ inputs.plugin_name }}
+          remote_host: ${{ inputs.remote_host }}
+          remote_port: ${{ inputs.remote_port }}
+          remote_user: ${{ inputs.remote_user }}
+          deploy_key: ${{ secrets.deploy_key }}
       - name: Create zip archive
         working-directory: ${{ env.PLUGIN_DIR }}
         run: |

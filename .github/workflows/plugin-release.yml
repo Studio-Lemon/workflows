@@ -59,7 +59,7 @@ jobs:
         run: |
           missing=()
           [[ -z "$REMOTE_HOST" ]] && missing+=("remote_host")
-          [[ -z "$REMOTE_USER" ]] && missing+=("remote_user")
+          [[ -z "$REMOTE_USER" ]] && missing+=("remote_user secret")
           [[ -z "$DEPLOY_KEY" ]] && missing+=("deploy_key secret")
           if [[ ${#missing[@]} -gt 0 ]]; then
             echo "::error::deploy_to_satispress is true but the following required inputs are missing: ${missing[*]}"

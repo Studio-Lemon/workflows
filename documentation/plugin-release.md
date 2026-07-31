@@ -77,7 +77,7 @@ jobs:
       deploy_key: ${{ secrets.DEPLOY_KEY }}
 ```
 
-The deploy step reads exclude patterns from your `.gitattributes` `export-ignore` entries. See [rsync-to-satispress](./rsync-to-satispress.md) for details.
+The deploy step uses the [rsync-to-satispress](./rsync-to-satispress.md) action with `type` automatically set to `plugin`. Exclude patterns are read from your `.gitattributes` `export-ignore` entries.
 
 ### Calling Locally (Same Repository)
 

@@ -76,6 +76,34 @@ uses: Studio-Lemon/workflows/.github/workflows/spinup-deploy.yml@main
 secrets: inherit
 ```
 
+### [Release Please](./documentation/release-please.md)
+
+**File:** `.github/workflows/release-please.yml`
+
+Runs Release Please to create and maintain release pull requests and publish GitHub releases.
+
+- Uses a PAT so release publication can trigger downstream workflows
+- Supports custom Release Please configuration and manifest paths
+- Requires `contents: write` and `pull-requests: write` permissions
+
+**Quick Start:**
+
+```yaml
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    uses: Studio-Lemon/workflows/.github/workflows/release-please.yml@main
+    secrets:
+      release_please_token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+```
+
 ## 🔧 Available Actions
 
 ### [rsync to Satispress](./documentation/rsync-to-satispress.md)

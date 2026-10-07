@@ -126,6 +126,22 @@ Built into the `plugin-release` and `theme-release` workflows via the `deploy_to
     deploy_key: ${{ secrets.DEPLOY_KEY }}
 ```
 
+### [Publish WP Lemon resources](./documentation/publish-resources.md)
+
+**File:** `.github/actions/publish-resources/action.yml`
+
+Composite action that packages agent instructions and optionally publishes
+generated docs and the changelog. The caller supplies the source and authenticated
+docs checkouts and owns concurrency settings.
+
+```yaml
+- uses: Studio-Lemon/workflows/.github/actions/publish-resources@main
+  with:
+    publish_docs: 'false'
+```
+
+Use `'true'` for full docs-and-agents publication.
+
 ## 📖 How to Use
 
 ### 1. Call from Another Repository

@@ -1,0 +1,31 @@
+name: Publishing tests
+
+on:
+    push:
+        paths:
+            - '.gitattributes'
+            - '.github/actions/publish-resources/**'
+            - 'tests/publish-agents.test.js'
+            - '.github/workflows/tests-publishing.yml'
+    pull_request:
+        paths:
+            - '.gitattributes'
+            - '.github/actions/publish-resources/**'
+            - 'tests/publish-agents.test.js'
+            - '.github/workflows/tests-publishing.yml'
+
+permissions:
+    contents: read
+
+jobs:
+    publishing:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 'lts/*'
+            - name: Check publisher syntax
+              run: bash -n .github/actions/publish-resources/publish-agents.sh
+            - name: Test agent publishing
+              run: node --test tests/publish-agents.test.js

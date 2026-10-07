@@ -1,0 +1,60 @@
+name: Publish WP Lemon resources
+description: Package agents and optionally publish docs from checked-out wp_lemon to docs
+
+inputs:
+    publish_docs:
+        description: Whether to also publish generated docs and the changelog (true or false)
+        required: true
+
+runs:
+    using: composite
+    steps:
+        - name: Validate publishing mode
+          shell: bash
+          env:
+              PUBLISH_DOCS: ${{ inputs.publish_docs }}
+          run: |
+              if [ "$PUBLISH_DOCS" != "true" ] && [ "$PUBLISH_DOCS" != "false" ]; then
+                  echo "::error::publish_docs must be true or false."
+                  exit 1
+              fi
+
+        - name: Package agent instructions
+          shell: bash
+          env:
+              PUBLISHER_SCRIPT: ${{ github.action_path }}/publish-agents.sh
+          run: bash "$PUBLISHER_SCRIPT" ./wp_lemon ./docs/agents
+
+        - name: Copy docs and changelog
+          if: inputs.publish_docs == 'true'
+          shell: bash
+          run: |
+              set -euo pipefail
+              mkdir -p ./docs/generated/changelogs
+              cp -R ./wp_lemon/docs/. ./docs/generated/
+              cp ./wp_lemon/CHANGELOG.md ./docs/generated/changelogs/
+
+        - name: Push resources
+          shell: bash
+          env:
+              PUBLISH_DOCS: ${{ inputs.publish_docs }}
+          run: |
+              set -euo pipefail
+              cd ./docs
+              git config user.name github-actions
+              git config user.email github-actions@github.com
+              git add agents
+              message="Update agents from wp-lemon"
+
+              if [ "$PUBLISH_DOCS" = "true" ]; then
+                  git add generated
+                  message="Update docs and agents from wp-lemon"
+              fi
+
+              if git diff --cached --quiet; then
+                  echo "Nothing changed, skipping commit"
+                  exit 0
+              fi
+
+              git commit -m "$message"
+              git push

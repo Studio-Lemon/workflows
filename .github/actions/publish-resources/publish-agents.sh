@@ -53,8 +53,17 @@ tar --sort=name \
 
 checksum=$(sha256sum "$target_dir/agents.tar.gz" | cut -d' ' -f1)
 released_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+# false is the initial release within a version; later changes count up from 1.
+revision=false
 
 if [ -f "$manifest" ]; then
+    revision=$(jq -c --arg sha "$checksum" --arg version "$version" '
+        (.revision // false) as $current
+        | if .version != $version then false
+          elif .sha256 == $sha then $current
+          else (if $current == false then 0 else $current end) + 1
+          end' "$manifest")
+
     previous=$(jq -r --arg sha "$checksum" --arg version "$version" \
         'select(.sha256 == $sha and .version == $version) | "\(.released_at)\t\(.source_commit)"' \
         "$manifest")
@@ -71,9 +80,11 @@ jq -n \
     --arg sha256 "$checksum" \
     --arg source_commit "$source_commit" \
     --argjson file_count "$file_count" \
+    --argjson revision "$revision" \
     '{
         version: $version,
         agents_revision: $sha256,
+        revision: $revision,
         released_at: $released_at,
         sha256: $sha256,
         file_count: $file_count,

@@ -79,6 +79,7 @@ test('first publication retains the CLI contract and checked-out commit', (t) =>
 	assert.equal(manifest.version, '5.66.2');
 	assert.equal(manifest.sha256, checksum);
 	assert.equal(manifest.agents_revision, checksum);
+	assert.equal(manifest.revision, false);
 	assert.equal(manifest.source_commit, f.initialCommit);
 	assert.equal(manifest.file_count, 1);
 	assert.equal(manifest.tarball, 'agents/agents.tar.gz');
@@ -110,6 +111,11 @@ test('instructions change independently of the theme version, including added an
 	assert.equal(after.version, before.version);
 	assert.notEqual(after.sha256, before.sha256);
 	assert.equal(after.agents_revision, after.sha256);
+	assert.equal(before.revision, false);
+	assert.equal(after.revision, 1);
+	fs.writeFileSync(path.join(f.agents, 'references/api.md'), 'Revised again\n');
+	f.commit();
+	assert.equal(f.publish().revision, 2);
 	assert.equal(after.source_commit, commit);
 	assert.equal(after.file_count, 1);
 	const listing = execFileSync('tar', ['-tzf', path.join(f.target, 'agents.tar.gz')], { encoding: 'utf8' });
@@ -125,6 +131,7 @@ test('a full theme version bump updates provenance without changing the agent re
 	const after = f.publish();
 	assert.equal(after.version, '5.67.0');
 	assert.equal(after.agents_revision, before.agents_revision);
+	assert.equal(after.revision, false);
 	assert.equal(after.source_commit, commit);
 	const snapshot = f.snapshot();
 	f.publish();
@@ -156,6 +163,7 @@ test('legacy manifests migrate without changing release identity', (t) => {
 	const before = f.publish();
 	const legacy = { ...before };
 	delete legacy.agents_revision;
+	delete legacy.revision;
 	fs.writeFileSync(path.join(f.target, 'manifest.json'), JSON.stringify(legacy));
 	assert.deepEqual(f.publish(), before);
 });

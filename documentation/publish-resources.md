@@ -51,6 +51,9 @@ authentication comes from the caller's docs checkout.
 - `docs/agents/agents.tar.gz` is deterministic. The manifest retains the theme
   version from the source's `package.json`; `agents_revision` and `sha256` identify
   the instruction payload independently of that version.
+- `revision` is `false` for the first publication of a theme version. Each
+  instruction change within the same version increments it (`1`, `2`, ...), and a
+  new theme version resets it to `false`.
 - Unchanged instructions with the same version preserve their timestamp and
   source commit. Repeated unchanged publications do not create commits.
 - An older or diverged source commit is rejected before replacing published

@@ -67,6 +67,7 @@ Complete WordPress theme deployment pipeline for SpinupWP servers.
 - Builds Composer dependencies with Satispress support
 - Compiles frontend assets with Yarn
 - Deploys via rsync to remote servers
+- Selects staging (default) or production credentials through GitHub Environments
 - Clears SpinupWP caches
 
 **Quick Start:**

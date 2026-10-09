@@ -43,7 +43,7 @@ runs:
         echo "switches=$SWITCHES" >> $GITHUB_OUTPUT
 
     - name: rsync deployments
-      uses: burnett01/rsync-deployments@v8
+      uses: burnett01/rsync-deployments@v9
       with:
         switches: ${{ steps.build-switches.outputs.switches }}
         remote_path: files/wp-content/${{ inputs.type }}s/${{ inputs.name }}

@@ -1,0 +1,48 @@
+name: Update plugin-update-checker
+description: Replace the vendored plugin-update-checker folder with the latest upstream release and migrate PucFactory namespace usage.
+
+inputs:
+  puc_path:
+    description: "Folder containing plugin-update-checker.php. Auto-detected when empty."
+    required: false
+    default: ""
+  target_version:
+    description: "Install this upstream tag (e.g. v6.0) instead of the latest release."
+    required: false
+    default: ""
+  token:
+    description: "Token used for the GitHub API (public repository reads)."
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  updated:
+    description: "'true' when a newer version was installed into the working tree"
+    value: ${{ steps.sync.outputs.updated }}
+  path:
+    description: "Folder that contains the library"
+    value: ${{ steps.sync.outputs.path }}
+  current:
+    description: "Version found in the calling repository"
+    value: ${{ steps.sync.outputs.current }}
+  latest:
+    description: "Version that was installed (or is latest upstream)"
+    value: ${{ steps.sync.outputs.latest }}
+  namespace_changed:
+    description: "'true' when files outside the library folder were migrated"
+    value: ${{ steps.sync.outputs.namespace_changed }}
+  body_file:
+    description: "Markdown file with the generated pull request body"
+    value: ${{ steps.sync.outputs.body_file }}
+
+runs:
+  using: composite
+  steps:
+    - name: Sync plugin-update-checker
+      id: sync
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        PUC_PATH: ${{ inputs.puc_path }}
+        TARGET_TAG: ${{ inputs.target_version }}
+      run: bash "${{ github.action_path }}/puc-sync.sh"

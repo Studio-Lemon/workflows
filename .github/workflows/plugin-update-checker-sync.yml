@@ -1,0 +1,169 @@
+name: Plugin Update Checker Sync
+
+on:
+  workflow_call:
+    inputs:
+      puc_path:
+        description: "Folder containing plugin-update-checker.php (auto-detected when empty)"
+        required: false
+        type: string
+        default: ""
+      target_version:
+        description: "Install a specific upstream tag (e.g. v6.0) instead of the latest release"
+        required: false
+        type: string
+        default: ""
+      base_branch:
+        description: "Branch the pull request targets (defaults to the repository default branch)"
+        required: false
+        type: string
+        default: ""
+      labels:
+        description: "Comma-separated labels for the pull request (created when missing)"
+        required: false
+        type: string
+        default: "dependencies"
+      reviewers:
+        description: "Comma-separated GitHub users or org/team slugs to request a review from"
+        required: false
+        type: string
+        default: ""
+      draft:
+        description: "Open the pull request as a draft"
+        required: false
+        type: boolean
+        default: false
+      php_version:
+        description: "PHP version used to lint the updated files"
+        required: false
+        type: string
+        default: "8.2"
+    secrets:
+      pr_token:
+        description: "Optional PAT. Pull requests opened with GITHUB_TOKEN do not trigger CI workflows; a PAT does."
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: plugin-update-checker-sync-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.pr_token || github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.base_branch || github.event.repository.default_branch }}
+          token: ${{ secrets.pr_token || github.token }}
+
+      - name: Update plugin-update-checker
+        id: puc
+        uses: Studio-Lemon/workflows/.github/actions/update-plugin-update-checker@main
+        with:
+          puc_path: ${{ inputs.puc_path }}
+          target_version: ${{ inputs.target_version }}
+
+      # Closed-unmerged PRs count too, so a rejected version is not proposed again.
+      - name: Check for an existing pull request
+        id: existing
+        if: steps.puc.outputs.updated == 'true'
+        env:
+          BRANCH: chore/plugin-update-checker-${{ steps.puc.outputs.latest }}
+        run: |
+          count="$(gh pr list --head "$BRANCH" --state all --json number --jq length)"
+          if [ "$count" -gt 0 ]; then
+            echo "A pull request for $BRANCH already exists; nothing to do."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Set up PHP
+        if: steps.puc.outputs.updated == 'true' && steps.existing.outputs.skip != 'true'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php_version }}
+          coverage: none
+
+      - name: Lint PHP files
+        if: steps.puc.outputs.updated == 'true' && steps.existing.outputs.skip != 'true'
+        run: |
+          git add -A
+          git diff --cached --name-only --diff-filter=ACMR -z -- '*.php' \
+            | xargs -0 -r -n1 php -l > /dev/null
+          echo "PHP lint passed."
+
+      - name: Commit and push
+        if: steps.puc.outputs.updated == 'true' && steps.existing.outputs.skip != 'true'
+        env:
+          BRANCH: ${{ steps.existing.outputs.branch }}
+          VERSION: ${{ steps.puc.outputs.latest }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No file changes after the update; nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore(deps): update plugin-update-checker to $VERSION"
+          git push --force origin "$BRANCH"
+          echo "pushed=true" >> "$GITHUB_ENV"
+
+      - name: Open pull request
+        if: env.pushed == 'true'
+        env:
+          BRANCH: ${{ steps.existing.outputs.branch }}
+          BASE: ${{ inputs.base_branch || github.event.repository.default_branch }}
+          VERSION: ${{ steps.puc.outputs.latest }}
+          CURRENT: ${{ steps.puc.outputs.current }}
+          BODY_FILE: ${{ steps.puc.outputs.body_file }}
+          LABELS: ${{ inputs.labels }}
+          REVIEWERS: ${{ inputs.reviewers }}
+          DRAFT: ${{ inputs.draft }}
+        run: |
+          args=(--head "$BRANCH" --base "$BASE" \
+            --title "chore(deps): update plugin-update-checker from $CURRENT to $VERSION" \
+            --body-file "$BODY_FILE")
+          [ "$DRAFT" != "true" ] || args+=(--draft)
+
+          IFS=',' read -ra label_list <<< "$LABELS"
+          for label in "${label_list[@]}"; do
+            label="$(echo "$label" | xargs)"
+            [ -n "$label" ] || continue
+            gh label create "$label" --color 0366d6 >/dev/null 2>&1 || true
+            args+=(--label "$label")
+          done
+
+          IFS=',' read -ra reviewer_list <<< "$REVIEWERS"
+          for reviewer in "${reviewer_list[@]}"; do
+            reviewer="$(echo "$reviewer" | xargs)"
+            [ -z "$reviewer" ] || args+=(--reviewer "$reviewer")
+          done
+
+          url="$(gh pr create "${args[@]}")"
+          echo "Opened $url"
+          echo "### plugin-update-checker $CURRENT → $VERSION" >> "$GITHUB_STEP_SUMMARY"
+          echo "$url" >> "$GITHUB_STEP_SUMMARY"
+          echo "PR_URL=$url" >> "$GITHUB_ENV"
+
+      # Older update PRs that were never merged are now obsolete.
+      - name: Close superseded pull requests
+        if: env.PR_URL != ''
+        env:
+          BRANCH: ${{ steps.existing.outputs.branch }}
+        run: |
+          gh pr list --state open --json number,headRefName \
+            --jq '.[] | select(.headRefName | startswith("chore/plugin-update-checker-")) | "\(.number) \(.headRefName)"' \
+          | while read -r number head; do
+              [ "$head" != "$BRANCH" ] || continue
+              gh pr close "$number" --delete-branch \
+                --comment "Superseded by $PR_URL."
+            done

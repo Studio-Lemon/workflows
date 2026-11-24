@@ -6,12 +6,16 @@ on:
             - '.gitattributes'
             - '.github/actions/publish-resources/**'
             - 'tests/publish-agents.test.js'
+            - '.github/actions/update-plugin-update-checker/**'
+            - 'tests/puc-sync.test.js'
             - '.github/workflows/tests-publishing.yml'
     pull_request:
         paths:
             - '.gitattributes'
             - '.github/actions/publish-resources/**'
             - 'tests/publish-agents.test.js'
+            - '.github/actions/update-plugin-update-checker/**'
+            - 'tests/puc-sync.test.js'
             - '.github/workflows/tests-publishing.yml'
 
 permissions:
@@ -27,5 +31,7 @@ jobs:
                   node-version: 'lts/*'
             - name: Check publisher syntax
               run: bash -n .github/actions/publish-resources/publish-agents.sh
-            - name: Test agent publishing
-              run: node --test tests/publish-agents.test.js
+            - name: Check plugin-update-checker sync syntax
+              run: bash -n .github/actions/update-plugin-update-checker/puc-sync.sh
+            - name: Test agent publishing and plugin-update-checker sync
+              run: node --test tests/publish-agents.test.js tests/puc-sync.test.js

@@ -105,6 +105,37 @@ jobs:
       release_please_token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
 ```
 
+### [Plugin Update Checker Sync](./documentation/plugin-update-checker-sync.md)
+
+**File:** `.github/workflows/plugin-update-checker-sync.yml`
+
+Keeps a vendored [plugin-update-checker](https://github.com/YahnisElsts/plugin-update-checker) folder current. Run it on a weekly schedule.
+
+- Detects the installed version and compares it with the latest upstream release
+- Replaces the whole library folder with the new release
+- Migrates `PucFactory` namespace and loader references in the rest of the codebase
+- Lints the changes and opens a pull request with release notes and a migration report
+- Closes superseded update pull requests
+
+**Quick Start:**
+
+```yaml
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  puc:
+    uses: Studio-Lemon/workflows/.github/workflows/plugin-update-checker-sync.yml@main
+    secrets:
+      pr_token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+```
+
 ## 🔧 Available Actions
 
 ### [rsync to Satispress](./documentation/rsync-to-satispress.md)

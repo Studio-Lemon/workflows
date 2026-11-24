@@ -4,6 +4,11 @@ on:
   # Allow this workflow to be called from another repo (reusable workflow)
   workflow_call:
     inputs:
+      environment:
+        description: "GitHub Environment to deploy to: staging or production"
+        required: false
+        type: string
+        default: staging
       initial_deploy:
         description: "Whether this is an initial deploy (skip cache clear)"
         required: false
@@ -44,11 +49,17 @@ jobs:
     outputs:
       theme_name: ${{ steps.detect-theme.outputs.THEME_NAME }}
     steps:
-      - name: Validate SSH key format
-        run: |
-          echo "$SSH_KEY" | ssh-keygen -y -f /dev/stdin > /dev/null
+      - name: Validate deployment environment
         env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
+          DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          case "$DEPLOY_ENVIRONMENT" in
+            staging|production) ;;
+            *)
+              echo "::error::Invalid deployment environment. Expected staging or production."
+              exit 1
+              ;;
+          esac
       - name: Checkout Repository
         uses: actions/checkout@v7
 
@@ -124,10 +135,25 @@ jobs:
           path: web/app/themes/
           retention-days: 1
   deploy_php:
-    name: Deploy Bedrock and plugin PHP Files
+    name: Deploy Bedrock and plugin PHP Files to ${{ inputs.environment }}
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     needs: [detect_theme, build_php]
     steps:
+      - name: Validate SSH credentials
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          if [ -z "$SSH_KEY" ] || [ -z "$SSH_USER" ] || [ -z "$SSH_HOST" ]; then
+            echo "::error::Missing deployment credentials. Configure SSH_KEY, SSH_USER and SSH_HOST for the selected environment."
+            exit 1
+          fi
+          if ! printf '%s\n' "$SSH_KEY" | ssh-keygen -y -f /dev/stdin > /dev/null; then
+            echo "::error::SSH_KEY must be a valid, unencrypted SSH private key."
+            exit 1
+          fi
       - name: Checkout Repository
         uses: actions/checkout@v7
 
@@ -188,10 +214,25 @@ jobs:
           retention-days: 1
 
   deploy_theme:
-    name: Deploy Theme Files
+    name: Deploy Theme Files to ${{ inputs.environment }}
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     needs: [detect_theme, build_theme]
     steps:
+      - name: Validate SSH credentials
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          if [ -z "$SSH_KEY" ] || [ -z "$SSH_USER" ] || [ -z "$SSH_HOST" ]; then
+            echo "::error::Missing deployment credentials. Configure SSH_KEY, SSH_USER and SSH_HOST for the selected environment."
+            exit 1
+          fi
+          if ! printf '%s\n' "$SSH_KEY" | ssh-keygen -y -f /dev/stdin > /dev/null; then
+            echo "::error::SSH_KEY must be a valid, unencrypted SSH private key."
+            exit 1
+          fi
       - name: Checkout Repository
         uses: actions/checkout@v7
 
@@ -218,10 +259,25 @@ jobs:
           remote_user: ${{ secrets.SSH_USER }}
           remote_key: ${{ secrets.SSH_KEY }}
   clear_cache:
-    name: Clear Cache
+    name: Clear Cache on ${{ inputs.environment }}
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     needs: [deploy_theme, deploy_php]
     steps:
+      - name: Validate SSH credentials
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          if [ -z "$SSH_KEY" ] || [ -z "$SSH_USER" ] || [ -z "$SSH_HOST" ]; then
+            echo "::error::Missing deployment credentials. Configure SSH_KEY, SSH_USER and SSH_HOST for the selected environment."
+            exit 1
+          fi
+          if ! printf '%s\n' "$SSH_KEY" | ssh-keygen -y -f /dev/stdin > /dev/null; then
+            echo "::error::SSH_KEY must be a valid, unencrypted SSH private key."
+            exit 1
+          fi
       - name: Login and clear cache
         uses: appleboy/ssh-action@v1.2.5
         with:
@@ -235,11 +291,26 @@ jobs:
             fi
 
   deploy_env:
-    name: Deploy Environment File (Initial Deploy Only)
+    name: Deploy Environment File to ${{ inputs.environment }} (Initial Deploy Only)
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     needs: [detect_theme, deploy_php]
     if: inputs.initial_deploy
     steps:
+      - name: Validate SSH credentials
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          if [ -z "$SSH_KEY" ] || [ -z "$SSH_USER" ] || [ -z "$SSH_HOST" ]; then
+            echo "::error::Missing deployment credentials. Configure SSH_KEY, SSH_USER and SSH_HOST for the selected environment."
+            exit 1
+          fi
+          if ! printf '%s\n' "$SSH_KEY" | ssh-keygen -y -f /dev/stdin > /dev/null; then
+            echo "::error::SSH_KEY must be a valid, unencrypted SSH private key."
+            exit 1
+          fi
       - name: Checkout Repository
         uses: actions/checkout@v7
 

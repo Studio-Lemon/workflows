@@ -6,7 +6,7 @@ The reusable `plugin-update-checker-sync` workflow keeps a vendored copy of [Yah
 
 1. **Finds the library.** Locates the folder containing `plugin-update-checker.php` (the file with the `Plugin Update Checker Library X.Y` header) and reads the installed version from it.
 2. **Checks upstream.** Looks up the latest release of `YahnisElsts/plugin-update-checker`. Nothing happens when you are up to date.
-3. **Skips known updates.** If a branch or pull request for that version already exists (including closed ones), the run ends. A rejected version is not proposed again.
+3. **Skips open updates.** If a pull request for that version is still open, the run ends. A closed pull request or deleted branch does not block it, so the next run opens a new pull request for that version (the branch is force-pushed).
 4. **Renews the folder completely.** Deletes the old folder and replaces it with the upstream release tarball. The tarball honours upstream's `export-ignore`, so `build/` and `examples/` stay out. Removed upstream files disappear from your repository too.
 5. **Migrates the namespace.** Reads the new namespace from the release (for example `YahnisElsts\PluginUpdateChecker\v6`) and rewrites every tracked PHP file outside the library folder that references an older one: `use` statements, fully-qualified calls, and double-escaped strings. References to `load-vXpY.php` are updated to the new loader file.
 6. **Keeps `vendor/` committed.** The library ships its own `vendor/` folder, which must be in the repository. If a `.gitignore` rule ignores it, the workflow adds an exception (`!/<puc_path>/vendor/`) and force-adds the whole library folder, so the folder is part of the pull request either way.

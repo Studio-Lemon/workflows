@@ -70,16 +70,16 @@ jobs:
           puc_path: ${{ inputs.puc_path }}
           target_version: ${{ inputs.target_version }}
 
-      # Closed-unmerged PRs count too, so a rejected version is not proposed again.
-      - name: Check for an existing pull request
+      # Only open PRs block a run; a closed PR or deleted branch is proposed again.
+      - name: Check for an open pull request
         id: existing
         if: steps.puc.outputs.updated == 'true'
         env:
           BRANCH: chore/plugin-update-checker-${{ steps.puc.outputs.latest }}
         run: |
-          count="$(gh pr list --head "$BRANCH" --state all --json number --jq length)"
+          count="$(gh pr list --head "$BRANCH" --state open --json number --jq length)"
           if [ "$count" -gt 0 ]; then
-            echo "A pull request for $BRANCH already exists; nothing to do."
+            echo "An open pull request for $BRANCH already exists; nothing to do."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"

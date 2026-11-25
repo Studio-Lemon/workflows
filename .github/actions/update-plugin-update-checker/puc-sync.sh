@@ -9,7 +9,8 @@
 #   PUC_TARBALL     Local tarball to use instead of downloading (tests).
 #   PUC_LATEST_TAG  Skip the API lookup and use this tag as latest release (tests).
 #   BODY_FILE       Where to write the pull request body. Default: $RUNNER_TEMP/puc-pr-body.md
-#   GITHUB_OUTPUT   Receives: updated, path, current, latest, tag, namespace_changed, body_file
+#   GITHUB_OUTPUT   Receives: updated, path, current, latest, tag, namespace_changed,
+#                   vendor_exception_added, body_file
 set -euo pipefail
 
 UPSTREAM="${UPSTREAM:-YahnisElsts/plugin-update-checker}"
@@ -92,6 +93,27 @@ rm -rf "$puc_path"
 mkdir -p "$(dirname "$puc_path")"
 mv "$work/new" "$puc_path"
 
+# The library's vendor/ folder (Parsedown, readme parser) must be committed, but
+# projects commonly ignore every vendor/ folder. Add a .gitignore exception for it.
+vendor_ignored=false
+vendor_probe="$puc_path/vendor/Parsedown.php"
+if [ -e "$vendor_probe" ] && git check-ignore -q "$vendor_probe"; then
+	vendor_ignored=true
+	exception="!/$puc_path/vendor/"
+	if ! grep -qxF "$exception" .gitignore 2>/dev/null; then
+		{
+			[ ! -s .gitignore ] || [ -z "$(tail -c1 .gitignore)" ] || echo
+			echo "# plugin-update-checker ships its own vendor folder, which must be committed"
+			echo "$exception"
+			echo "$exception**"
+		} >> .gitignore
+	fi
+	if git check-ignore -q "$vendor_probe"; then
+		echo "::warning::$puc_path/vendor is still ignored by a more specific rule; it will be force-added."
+	fi
+fi
+out vendor_exception_added "$vendor_ignored"
+
 # --- 4. Work out the new namespace and migrate usages ------------------------
 # The unversioned Puc/vN/PucFactory.php is the stable alias for a major version.
 alias_factory="$(find "$puc_path/Puc" -maxdepth 2 -name PucFactory.php -path '*/v[0-9]/*' 2>/dev/null | sort | tail -n1 || true)"
@@ -150,6 +172,10 @@ latest_major="${latest%%.*}"
 		printf -- '- `%s`\n' "${rewritten[@]}"
 	else
 		echo "No namespace or loader changes were needed outside \`$puc_path/\`."
+	fi
+	if [ "$vendor_ignored" = true ]; then
+		echo
+		echo "\`$puc_path/vendor/\` was ignored by \`.gitignore\`. An exception was added so the folder is committed."
 	fi
 	if [ "${#legacy[@]}" -gt 0 ]; then
 		echo

@@ -9,14 +9,15 @@ The reusable `plugin-update-checker-sync` workflow keeps a vendored copy of [Yah
 3. **Skips known updates.** If a branch or pull request for that version already exists (including closed ones), the run ends. A rejected version is not proposed again.
 4. **Renews the folder completely.** Deletes the old folder and replaces it with the upstream release tarball. The tarball honours upstream's `export-ignore`, so `build/` and `examples/` stay out. Removed upstream files disappear from your repository too.
 5. **Migrates the namespace.** Reads the new namespace from the release (for example `YahnisElsts\PluginUpdateChecker\v6`) and rewrites every tracked PHP file outside the library folder that references an older one: `use` statements, fully-qualified calls, and double-escaped strings. References to `load-vXpY.php` are updated to the new loader file.
-6. **Lints.** Runs `php -l` on all changed PHP files.
-7. **Opens the pull request** on `chore/plugin-update-checker-<version>` with:
+6. **Keeps `vendor/` committed.** The library ships its own `vendor/` folder, which must be in the repository. If a `.gitignore` rule ignores it, the workflow adds an exception (`!/<puc_path>/vendor/`) and force-adds the whole library folder, so the folder is part of the pull request either way.
+7. **Lints.** Runs `php -l` on all changed PHP files.
+8. **Opens the pull request** on `chore/plugin-update-checker-<version>` with:
    - a major upgrade warning when the major version changes
    - the list of files whose namespace was migrated
    - a caution list of files that still use the legacy `Puc_v*_Factory` API (not migrated automatically)
    - every `PucFactory` usage in the repository
    - the upstream release notes of every version between yours and the new one
-8. **Cleans up.** Older, still open update pull requests from this workflow are closed as superseded.
+9. **Cleans up.** Older, still open update pull requests from this workflow are closed as superseded.
 
 ## Inputs
 
@@ -80,4 +81,4 @@ jobs:
 
 ## Underlying Action
 
-The logic lives in the composite action `.github/actions/update-plugin-update-checker` (`puc-sync.sh`). It can be used on its own in a job that already has the repository checked out. It outputs `updated`, `path`, `current`, `latest`, `namespace_changed` and `body_file`, and leaves the changes uncommitted in the working tree.
+The logic lives in the composite action `.github/actions/update-plugin-update-checker` (`puc-sync.sh`). It can be used on its own in a job that already has the repository checked out. It outputs `updated`, `path`, `current`, `latest`, `namespace_changed`, `vendor_exception_added` and `body_file`, and leaves the changes uncommitted in the working tree.

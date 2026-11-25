@@ -93,8 +93,11 @@ jobs:
 
       - name: Lint PHP files
         if: steps.puc.outputs.updated == 'true' && steps.existing.outputs.skip != 'true'
+        env:
+          PUC_DIR: ${{ steps.puc.outputs.path }}
         run: |
           git add -A
+          git add -f -- "$PUC_DIR"
           git diff --cached --name-only --diff-filter=ACMR -z -- '*.php' \
             | xargs -0 -r -n1 php -l > /dev/null
           echo "PHP lint passed."
@@ -104,11 +107,14 @@ jobs:
         env:
           BRANCH: ${{ steps.existing.outputs.branch }}
           VERSION: ${{ steps.puc.outputs.latest }}
+          PUC_DIR: ${{ steps.puc.outputs.path }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$BRANCH"
           git add -A
+          # -f keeps the library's vendor/ folder even when a .gitignore rule matches it.
+          git add -f -- "$PUC_DIR"
           if git diff --cached --quiet; then
             echo "No file changes after the update; nothing to commit."
             exit 0

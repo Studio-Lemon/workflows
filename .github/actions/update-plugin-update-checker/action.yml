@@ -31,6 +31,9 @@ outputs:
   namespace_changed:
     description: "'true' when files outside the library folder were migrated"
     value: ${{ steps.sync.outputs.namespace_changed }}
+  vendor_exception_added:
+    description: "'true' when the library's vendor folder was ignored and a .gitignore exception was added"
+    value: ${{ steps.sync.outputs.vendor_exception_added }}
   body_file:
     description: "Markdown file with the generated pull request body"
     value: ${{ steps.sync.outputs.body_file }}

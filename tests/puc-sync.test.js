@@ -17,6 +17,7 @@ function library(root, version, segment) {
 	const minor = version.replace('.', 'p');
 	write(path.join(root, 'plugin-update-checker.php'), `<?php\n/**\n * Plugin Update Checker Library ${version}\n */\n`);
 	write(path.join(root, `load-v${minor}.php`), '<?php\n');
+	write(path.join(root, 'vendor/Parsedown.php'), '<?php\n');
 	write(path.join(root, `Puc/${segment}/PucFactory.php`), `<?php\nnamespace YahnisElsts\\PluginUpdateChecker\\${segment};\n`);
 	write(path.join(root, `Puc/v${minor}/PucFactory.php`), `<?php\nnamespace YahnisElsts\\PluginUpdateChecker\\v${minor};\n`);
 }
@@ -115,4 +116,21 @@ test('fails clearly when the library cannot be found', (t) => {
 	const result = run(f);
 	assert.notEqual(result.status, 0);
 	assert.match(result.stderr, /Could not find plugin-update-checker\.php/);
+});
+
+test('adds a .gitignore exception so the library vendor folder is committed', (t) => {
+	const f = fixture(t);
+	stubGh(f);
+	write(path.join(f.repo, '.gitignore'), 'vendor/');
+	execFileSync('git', ['add', '-f', '.'], { cwd: f.repo, env });
+	execFileSync('git', ['rm', '-r', '-q', '--cached', 'inc/puc/vendor'], { cwd: f.repo, env });
+
+	const result = run(f);
+	assert.equal(result.status, 0, result.stderr);
+	assert.equal(result.outputs.vendor_exception_added, 'true');
+
+	execFileSync('git', ['add', '-A'], { cwd: f.repo, env });
+	const staged = execFileSync('git', ['diff', '--cached', '--name-only'], { cwd: f.repo, env, encoding: 'utf8' });
+	assert.match(staged, /inc\/puc\/vendor\/Parsedown\.php/);
+	assert.match(fs.readFileSync(path.join(f.repo, '.gitignore'), 'utf8'), /^!\/inc\/puc\/vendor\/$/m);
 });

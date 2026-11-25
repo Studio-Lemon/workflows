@@ -28,7 +28,7 @@ The reusable `plugin-update-checker-sync` workflow keeps a vendored copy of [Yah
 | `labels` | `string` | `dependencies` | Comma-separated labels. Missing labels are created. |
 | `reviewers` | `string` | none | Comma-separated users or `org/team` slugs. |
 | `draft` | `boolean` | `false` | Open the pull request as a draft. |
-| `php_version` | `string` | `8.2` | PHP version used for linting. |
+| `php_version` | `string` | `8.4` | PHP version used for linting. |
 
 ## Secrets
 

@@ -37,7 +37,7 @@ on:
         description: "PHP version used to lint the updated files"
         required: false
         type: string
-        default: "8.2"
+        default: "8.4"
     secrets:
       pr_token:
         description: "Optional PAT. Pull requests opened with GITHUB_TOKEN do not trigger CI workflows; a PAT does."
